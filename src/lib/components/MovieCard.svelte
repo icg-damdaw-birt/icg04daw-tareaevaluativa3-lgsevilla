@@ -18,6 +18,9 @@
   // Estado local para toggle de favorito
   let togglingFavorite = $state(false);
 
+  // Estado local para cambio de rating
+  let togglingRating = $state(false);
+
   // Handlers: ejecutan callbacks del padre directamente
   function handleDelete() {
     ondelete?.(movie.id);
@@ -32,6 +35,13 @@
     togglingFavorite = true;
     const success = await moviesStore.toggleFavorite(movie.id);
     togglingFavorite = false;
+  }
+
+  // Handler para cambiar el rating
+  async function handleRateMovie(rating: number) {
+    togglingRating = true;
+    const success = await moviesStore.rateMovie(movie.id, rating);
+    togglingRating = false;
   }
 </script>
 
@@ -60,6 +70,33 @@
       {/if}
       {#if movie.isFavorite}
         <span class="ml-2 inline-block text-red-500">♥ Favorito</span>
+      {/if}
+    </div>
+
+    <!-- Rating Stars (0-5) -->
+    <div class="flex items-center gap-2">
+      <div class="flex gap-1">
+        {#each [1, 2, 3, 4, 5] as star}
+          <button
+            type="button"
+            class="text-xl transition"
+            class:text-yellow-400={star <= (movie.rating || 0)}
+            class:text-gray-300={star > (movie.rating || 0)}
+            class:hover:text-yellow-300={!togglingRating && star > (movie.rating || 0)}
+            class:hover:text-yellow-500={!togglingRating && star <= (movie.rating || 0)}
+            class:opacity-50={togglingRating}
+            class:cursor-not-allowed={togglingRating}
+            disabled={togglingRating}
+            onclick={() => handleRateMovie(star)}
+          >
+            {star <= (movie.rating || 0) ? '⭐' : '☆'}
+          </button>
+        {/each}
+      </div>
+      {#if movie.rating}
+        <span class="text-sm text-slate-600">{movie.rating}/5</span>
+      {:else}
+        <span class="text-sm text-slate-400">Sin calificar</span>
       {/if}
     </div>
 
